@@ -15,9 +15,9 @@ MODULE_DIR = Path(__file__).resolve().parent
 
 def run(build):
 
-    dir_data = os.path.join(build, 'dixon', 'stage_5_clean_dixon_data') 
-    dir_masks = os.path.join(build, 'kidney_shape', 'stage_1_segment') 
-    dir_output = os.path.join(build, 'kidney_shape', 'stage_2_display')
+    dir_data = os.path.join(build,'stage_0_restored_data', 'dixons') 
+    dir_masks = os.path.join(build, 'stage_1_build_canvas', 'clean_masks') 
+    dir_output = os.path.join(build, 'stage_3_display')
     os.makedirs(dir_output, exist_ok=True)
 
     logging.basicConfig(
@@ -68,7 +68,7 @@ def run_db(db_data, db_masks, db_mosaics):
 
 if __name__=='__main__':
 
-    BUILD = r'C:\Users\md1spsx\Documents\Data\iBEAt_Build'
+    BUILD = r''
     
     parser = argparse.ArgumentParser()
     parser.add_argument("--build", type=str, default=BUILD, help="Build folder")

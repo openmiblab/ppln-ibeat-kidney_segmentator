@@ -7,9 +7,9 @@ import argparse
 
 def run(build, fold=0):
 
-    raw_data = os.path.join(build,  'fatwater', 'stage_2_training_data', 'nnUNet_raw')
-    preproc_data = os.path.join(build,  'fatwater', 'stage_3_preprocess', 'nnUNet_preprocessed')
-    results = os.path.join(build,  'fatwater', 'stage_4_train', 'nnUNet_results')
+    raw_data = os.path.join(build, 'stage_2_training_data', 'nnUNet_raw')
+    preproc_data = os.path.join(build, 'stage_3_preprocess', 'nnUNet_preprocessed')
+    results = os.path.join(build, 'stage_4_train', 'nnUNet_results')
 
     # Ensure folders exist
     os.makedirs(results, exist_ok=True) 
@@ -24,7 +24,7 @@ def run(build, fold=0):
     # os.environ['nnUNet_n_proc_DA'] = '4' # Set in .sh file
 
     # https://github.com/MIC-DKFZ/nnUNet/blob/master/documentation/how_to_use_nnunet.md
-    cmd = ["nnUNetv2_train", "011", "3d_fullres", str(fold), "--c"]
+    cmd = ["nnUNetv2_train", "001", "nnUNetResEncUNetLPlans", "3d_fullres",  str(fold), "--c"]
 
     process = subprocess.Popen(
         cmd, 
@@ -45,7 +45,7 @@ def run(build, fold=0):
 
 if __name__ == '__main__':
 
-    BUILD = r"C:\Users\md1spsx\Documents\Data\iBEAt_Build"
+    BUILD = r""
 
     # Comment for the cluster
     os.environ['nnUNet_n_proc_DA'] = '4' # Set in .sh file

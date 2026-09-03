@@ -18,12 +18,14 @@ import utils.data
 from tqdm import tqdm
 import re
 
+fix_cases =[]
+
 def list_ids_through_data_dir(site, group, study):
     
     if group == 'Controls':
-        data_dir = os.path.join(os.getcwd(), 'build', 'stage_0_build_canvas', 'data', group)
+        data_dir = os.path.join(os.getcwd(), 'build', 'stage_1_build_canvas', 'reference_masks', group)
     else:
-        data_dir = os.path.join(os.getcwd(), 'build', 'stage_0_build_canvas', 'ground_truths', group, site)
+        data_dir = os.path.join(os.getcwd(), 'build', 'stage_1_build_canvas', 'reference_masks', group, site)
     
     database = db.series(data_dir, 'kidney_masks')
     for case in database:
@@ -38,7 +40,7 @@ def list_ids_through_data_dir(site, group, study):
 
 def list_ids_through_filenames(group):
     
-    png_dir = os.path.join(os.getcwd(), 'build', 'stage_0_build_canvas', 'displays', group)
+    png_dir = os.path.join(os.getcwd(), 'build', 'stage_1_build_canvas', 'displays', group)
     nii_dir = os.path.join(os.getcwd(), 'training', 'imagesTr')
 
     for f in os.listdir(png_dir):  
@@ -48,8 +50,8 @@ def list_ids_through_filenames(group):
 def rewrite_mask_into_dir(build_path, group, site, study, check_case=False, build_new_dir=False):
 
 
-    maskpath = os.path.join(build_path,  'stage_0_build_canvas', 'raw_data') 
-    destpath = os.path.join(build_path,  'stage_0_build_canvas', 'clean_data')
+    maskpath = os.path.join(build_path,  'stage_1_build_canvas', 'raw_masks') 
+    destpath = os.path.join(build_path,  'stage_1_build_canvas', 'clean_masks')
     os.makedirs(destpath, exist_ok=True)
 
     if group == 'Controls':
@@ -185,8 +187,8 @@ def rewrite_mask_into_dir(build_path, group, site, study, check_case=False, buil
 def compute_canvas(build_path, group, site=None):
 
 
-    datapath = os.path.join(build_path, 'stage_0_build_canvas', 'Dixon') 
-    maskpath = os.path.join(build_path, 'stage_0_build_canvas', 'data') 
+    datapath = os.path.join(build_path, 'stage_0_restored_data', 'dixons') 
+    maskpath = os.path.join(build_path, 'stage_1_canvas') 
     os.makedirs(maskpath, exist_ok=True)
 
     if group == 'Controls':
@@ -255,7 +257,7 @@ def compute_canvas(build_path, group, site=None):
 
 def display_canvas(build_path, group, site=None):
 
-    maskpath = os.path.join(build_path, 'kidneyvol', 'stage_1_canvas') 
+    maskpath = os.path.join(build_path, 'stage_1_canvas') 
     if group == 'Controls':
         sitemaskpath = os.path.join(maskpath, group)
     else:
@@ -366,18 +368,25 @@ def show_arrays_in_napari(arrays, names=None, contrast_limits=None):
     return viewer
 
 if __name__ == '__main__':
-    fix_cases = []
     build_path = os.path.join(os.getcwd(), 'build')
-    group = 'Controls'
-    site='Turku'
-    study = 'Baseline'
+    visits = [1,2,3,4,5]
+    for v in visits:
+        compute_canvas(build_path, 'Controls')
+    sites_1 = ['Bari', 'Leeds', 'Sheffield']
+    for site in tqdm(sites_1, desc='Sites Completed', unit='site'):
+        compute_canvas(build_path, 'Patients')
 
-    compute_canvas(build_path, group)
+    sites_2 = ['Bordeaux', 'Exeter', 'Turku']
+    for site in tqdm(sites_2, desc='Sites Completed', unit='site'):
+        for study in ('Baseline', 'Followup'):
+            compute_canvas(build_path, 'Patients')
+            compute_canvas(build_path, 'Patients')
 
     #Once mask is generated in gui, use the following function to rebuild directory
+    group=[], site=[], study=[],
     rewrite_mask_into_dir(build_path, group, site, study, build_new_dir=False)
 
-    #List IDs using:
+    #List IDs for datakeeping purposes:
     list_ids_through_data_dir()
     list_ids_through_filenames()
 

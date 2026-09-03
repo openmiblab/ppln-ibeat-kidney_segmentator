@@ -6,9 +6,9 @@ import argparse
 
 def run(build):
 
-    raw_data = os.path.join(build, 'stage_2_training_data', 'nnUNet_raw')
+    raw_data = os.path.join(build, 'stage_2_training', 'nnUNet_raw')
     preproc_data = os.path.join(build, 'stage_3_preprocess', 'nnUNet_preprocessed')
-    results = os.path.join(build, 'stage_4_train', 'nnUNet_results')
+    results = os.path.join(build, 'stage_4_results', 'nnUNet_results')
 
     # Ensure folders exist
     os.makedirs(preproc_data, exist_ok=True)
@@ -29,6 +29,8 @@ def run(build):
         "001",
         "-c", 
         "3d_fullres",
+        "-pl,"
+        "nnUNetPlannerResEncL"
         "--verify_dataset_integrity",
     ]
 

@@ -1,10 +1,8 @@
 import os
-import shutil
 import subprocess
-import argparse
 
 
-def run(build, i, o, f, chk=None):
+def run(i, o, f, chk=None):
 
     # https://github.com/MIC-DKFZ/nnUNet/blob/master/documentation/how_to_use_nnunet.md
 
@@ -15,6 +13,7 @@ def run(build, i, o, f, chk=None):
         "-d", "001",
         "-c", "3d_fullres",
         "-f", f,
+        "-p", "nnUNetResEncUNetLPlans"
         "-chk", chk
     ]
 
@@ -37,14 +36,13 @@ def run(build, i, o, f, chk=None):
 
 if __name__ == '__main__':
 
-    BUILD = os.path.join("")
-    i = []
-    o = []
-    f = []
+    input_folder = []
+    output_folder = []
+    fold = []
     chk = []
 
     # Comment for the cluster
     os.environ['nnUNet_n_proc_DA'] = '4' # Set in .sh file
     os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
-    run(build=BUILD, i=i, o=o, f=f, chk=chk)
+    run(i=input_folder, o=output_folder, f=fold, chk=chk)

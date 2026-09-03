@@ -8,7 +8,8 @@ from tqdm import tqdm
 
 def isolate_largest_kidney_components(
         input_dir,
-        output_dir
+        output_dir,
+        exclude_valdation=False
 ):
     """
     Isolate the largest connected component for each kidney label.
@@ -29,9 +30,11 @@ def isolate_largest_kidney_components(
         filename = os.path.basename(nifti_file)
         cid = filename.replace('.nii.gz', '')
         filepath = os.path.join(output_dir, filename)
-        if cid in VALIDATION:
-            tqdm.write(f'Skipping {cid}. gt in val')
-            continue
+
+        if exclude_valdation == True:
+            if cid in VALIDATION:
+                tqdm.write(f'Skipping {cid}. gt in val')
+                continue
 
         if os.path.exists(filepath):
             tqdm.write(f'case {cid} in file')
@@ -101,7 +104,13 @@ def isolate_largest_kidney_components(
 
         print(f"Saved: {output_path}")
 
-VALIDATION = [
+
+# ==========================================================
+# Postprocess NifTi inference data 
+# ==========================================================
+if __name__ == '__main__':
+
+    VALIDATION = [
     "1128_005",
     "1128_018_00",
     "1128_019",
@@ -216,15 +225,12 @@ VALIDATION = [
     "7128_158_00",
     "7128_163",
     "7128_165_00"]
-# ==========================================================
-# Postprocess NifTi inference data 
-# ==========================================================
-if __name__ == '__main__':
 
     input_dir = r""
     output_dir = r""
 
     isolate_largest_kidney_components(
         input_dir=input_dir,
-        output_dir=output_dir
+        output_dir=output_dir,
+        exclude_valdation=False
     )

@@ -13,13 +13,13 @@ check_case = []
 def edit_case(site=None, group=None, study=None, visit=None, check_cases=False):
     
     if group == 'Controls':
-        image_data_dir = os.path.join(os.getcwd(), 'build', 'stage_0_build_canvas', 'data', group)
-        kidney_masks_data_dir = os.path.join(os.getcwd(), 'build', 'stage_0_build_canvas', 'gt_dicoms', group)
-        manual_edits_data_dir = os.path.join(os.getcwd(), 'build', 'stage_0_build_canvas', 'manual_edits', group)        
+        image_data_dir = os.path.join(os.getcwd(), 'build', 'stage_0_restored_data', 'dixons', group)
+        kidney_masks_data_dir = os.path.join(os.getcwd(), 'build', 'stage_1_build_canvas', 'reference_masks', group)
+        manual_edits_data_dir = os.path.join(os.getcwd(), 'build', 'stage_1_build_canvas', 'reference_mask_edits', group)        
     else:
-        image_data_dir = os.path.join(os.getcwd(), 'build', 'stage_0_build_canvas', 'data', group, site)
-        kidney_masks_data_dir = os.path.join(os.getcwd(), 'build', 'stage_0_build_canvas', 'gt_dicoms', group, site)
-        manual_edits_data_dir = os.path.join(os.getcwd(), 'build', 'stage_0_build_canvas', 'manual_edits', group, site)
+        image_data_dir = os.path.join(os.getcwd(), 'build', 'stage_0_restored_data', 'dixons', group, site)
+        kidney_masks_data_dir = os.path.join(os.getcwd(), 'build', 'stage_1_build_canvas', 'reference_masks', group, site)
+        manual_edits_data_dir = os.path.join(os.getcwd(), 'build', 'stage_1_build_canvas', 'reference_mask_edits', group, site)
     
 
     database = db.series(image_data_dir, 'dixon_out_phase')

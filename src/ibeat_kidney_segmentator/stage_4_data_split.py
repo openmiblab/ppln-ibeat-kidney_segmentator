@@ -5,32 +5,6 @@ import shutil
 from collections import defaultdict
 from tqdm import tqdm
 
-# ---------------- CONFIG ----------------
-imagesTr = "build/stage_1_training/imagesTr"
-labelsTr = "build/stage_1_training/labelsTr"
-imagesTs = "build/stage_1_training/testing/imagesTs"
-labelsTs = 'build/stage_1_training/testing/labelsTs'
-
-
-# folders for moved-out cases
-testing_root = 'build/stage_1_training/testing/'
-faulty_tr_root = "build/stage_1_trainingg/tr_excluded_labels"
-no_label_tr_root = "build/stage_1_training/tr_files_with_no_labels"
-no_tr_labels_root ="build/stage_1_training/lbl_files_with_no_tr"
-faulty_labels_txt = "build/stage_1_training/faulty_labels.txt"
-
-# k-fold CV
-k_folds = 1
-seed = 42
-
-# held-out test split at patient level
-test_fraction = 0.2   # % of patients held out as test
-min_test_patients = 1  # ensure at least 1 test patient if possible
-
-# Where to write split JSONs
-out_dir = "training/splits"
-os.makedirs(out_dir, exist_ok=True)
-
 
 # ---------------- UTILS ----------------
 def ensure_dirs(*dirs):
@@ -573,7 +547,33 @@ def create_fold_0_database():
     print(f"  Mean images/patient: {sum(counts)//len(counts)}")
 
 if __name__ == "__main__":
+    # ---------------- CONFIG ----------------
+    build = ""
+    imagesTr = os.path.join(build, "stage_2_training/imagesTr")
+    labelsTr = os.path.join(build, "stage_2_training/labelsTr")
+    imagesTs = os.path.join(build, "stage_2_training/testing/imagesTs")
+    labelsTs = os.path.join(build, 'stage_2_training/testing/labelsTs')
 
-    # just reset images+labels to training folders
-    reset_all()
+    # folders for moved-out cases
+    testing_root = os.path.join(build, "stage_2_training/testing")
+    faulty_tr_root = os.path.join(build, "stage_2_trainingg/tr_excluded_labels")
+    no_label_tr_root = os.path.join(build,"stage_2_training/tr_files_with_no_labels")
+    no_tr_labels_root = os.path.join(build,"stage_2_training/lbl_files_with_no_tr")
+    faulty_labels_txt = os.path.join(build,"stage_2_training/faulty_labels.txt")
+
+    # k-fold CV
+    k_folds = 1
+    seed = 42
+
+    # held-out test split at patient level
+    test_fraction = 0.2   # % of patients held out as test
+    min_test_patients = 1  # ensure at least 1 test patient if possible
+
+    # Where to write split JSONs
+    out_dir = os.path.join(build,"stage_2_training/splits")
+    os.makedirs(out_dir, exist_ok=True)
+
     create_fold_0_database()
+
+    #OPTIONAL: reset images+labels to training folder
+    #reset_all()

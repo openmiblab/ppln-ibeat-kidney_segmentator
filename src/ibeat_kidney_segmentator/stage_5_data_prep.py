@@ -122,11 +122,11 @@ def create_database(
 def prep_tr_data_nnunet(site=None, study_type=None, cohort='Controls', precontrast=False, visit=1):
     # build table_dir
     if site is not None:
-        data_dir = os.path.join(os.getcwd(), 'build', "Dixon", cohort, site)
+        data_dir = os.path.join(os.getcwd(), 'build', "stage_0_restored_data", 'dixons', cohort, site)
     else:
-        data_dir = os.path.join(os.getcwd(), 'build', "Dixon", cohort)
+        data_dir = os.path.join(os.getcwd(), 'build', "stage_0_restored_data", "dixon", cohort)
 
-    dest_dir_lbls = os.path.join(os.getcwd(), 'build', "stage_1_training", 'imagesTr')
+    dest_dir_lbls = os.path.join(os.getcwd(), 'build', "stage_2_training", "nnunet_raw", "imagesTr")
     os.makedirs(dest_dir_lbls, exist_ok=True)
 
     if cohort == 'Controls':
@@ -298,11 +298,11 @@ def prep_labels(site=None, study_type=None, cohort='Controls', visit=1, rebuild=
 
     # build table_dir
     if site is not None:
-        lbls_dir = os.path.join(os.getcwd(), "stage_1_training", "gt_dicoms", cohort, site)
+        lbls_dir = os.path.join(os.getcwd(), "stage_2_training", "ref_mask_dicoms", cohort, site)
     else:
-        lbls_dir = os.path.join(os.getcwd(), "stage_1_training", "gt_dicoms", cohort)
+        lbls_dir = os.path.join(os.getcwd(), "stage_2_training", "ref_mask_dicoms", cohort)
 
-    dest_dir_lbls = os.path.join(os.getcwd(), "stage_1_training", 'labelsTr')
+    dest_dir_lbls = os.path.join(os.getcwd(), "stage_2_training", "nnunet_raw", "labelsTr")
     os.makedirs(dest_dir_lbls, exist_ok=True)
 
     if cohort == 'Controls':
