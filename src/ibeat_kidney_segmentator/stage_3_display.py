@@ -65,13 +65,12 @@ def run_db(db_data, db_masks, db_mosaics):
         except:
             logging.exception(f"Error building mosaic for {patient_id}, {study}, {sequence}.")
 
-
-if __name__=='__main__':
-
-    BUILD = r''
-    
+def run(build):
     parser = argparse.ArgumentParser()
-    parser.add_argument("--build", type=str, default=BUILD, help="Build folder")
+    parser.add_argument("--build", type=str, default=build, help="Build folder")
     args = parser.parse_args()
 
     run(args.build)
+
+if __name__=='__main__':
+    run()

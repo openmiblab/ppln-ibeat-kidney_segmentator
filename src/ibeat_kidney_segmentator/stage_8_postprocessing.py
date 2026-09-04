@@ -105,6 +105,17 @@ def isolate_largest_kidney_components(
         print(f"Saved: {output_path}")
 
 
+def run(VALIDATION, input_dir, output_dir):
+
+    VALIDATION = []
+
+
+    isolate_largest_kidney_components(
+        input_dir,
+        output_dir,
+        exclude_valdation=False
+    )
+
 # ==========================================================
 # Postprocess NifTi inference data 
 # ==========================================================

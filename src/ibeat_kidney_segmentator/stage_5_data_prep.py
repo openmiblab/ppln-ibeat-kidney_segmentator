@@ -404,8 +404,10 @@ def prep_lbls_nnunet():
         for study in  ('Baseline', 'Followup'):
             prep_labels(site, study, 'Patients')
 
-if __name__ == '__main__':
+def run():
     prep_img_nnunet()
     prep_lbls_nnunet()
 
-    # missing_labels = []
+if __name__ == '__main__':
+    run()
+    

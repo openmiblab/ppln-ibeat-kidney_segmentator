@@ -6,7 +6,7 @@ import napari
 from qtpy.QtWidgets import QPushButton
 import numpy as np
 
-check_case = []
+single_case = []
 
 
 
@@ -38,7 +38,7 @@ def edit_case(site=None, group=None, study=None, visit=None, check_cases=False):
         i_study_or_visit = case[2][0]
         
         if check_cases == True:
-            if case_id not in check_case:
+            if case_id not in single_case:
                 continue
 
         #select the corresponding mask
@@ -92,6 +92,9 @@ def edit_case(site=None, group=None, study=None, visit=None, check_cases=False):
 
     print('End of session...Goodbye & Godspeed!')
 
+def run(site, group, study):
+
+    edit_case(site, group, study)
 
 
 
@@ -108,4 +111,4 @@ if __name__ =='__main__':
     Base = 'Baseline'
     F = 'Followup'
 
-    edit_case(site=S, group=P, study=Base,  check_cases=True)
+    run()

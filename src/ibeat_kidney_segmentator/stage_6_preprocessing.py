@@ -53,7 +53,7 @@ def run(build):
 
 if __name__ == '__main__':
 
-    BUILD = r""
+    BUILD = os.path.join(os.getcwd(), 'build')
 
     # Comment for the cluster
     os.environ['nnUNet_n_proc_DA'] = '4' # Set in .sh file

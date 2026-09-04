@@ -18,7 +18,7 @@ import utils.data
 from tqdm import tqdm
 import re
 
-fix_cases =[]
+fix_cases = []
 
 def list_ids_through_data_dir(site, group, study):
     
@@ -367,26 +367,28 @@ def show_arrays_in_napari(arrays, names=None, contrast_limits=None):
     napari.run()
     return viewer
 
-if __name__ == '__main__':
-    build_path = os.path.join(os.getcwd(), 'build')
-    visits = [1,2,3,4,5]
-    for v in visits:
-        compute_canvas(build_path, 'Controls')
+def run(build):
+
+    compute_canvas(build, 'Controls')
+
     sites_1 = ['Bari', 'Leeds', 'Sheffield']
     for site in tqdm(sites_1, desc='Sites Completed', unit='site'):
-        compute_canvas(build_path, 'Patients')
+        compute_canvas(build, 'Patients', site)
 
     sites_2 = ['Bordeaux', 'Exeter', 'Turku']
     for site in tqdm(sites_2, desc='Sites Completed', unit='site'):
         for study in ('Baseline', 'Followup'):
-            compute_canvas(build_path, 'Patients')
-            compute_canvas(build_path, 'Patients')
+            compute_canvas(build, 'Patients', site, study)
 
-    #Once mask is generated in gui, use the following function to rebuild directory
-    group=[], site=[], study=[],
-    rewrite_mask_into_dir(build_path, group, site, study, build_new_dir=False)
+    # #Once mask is generated in gui, use the following function to rebuild directory
+    # group=[], site=[], study=[],
+    # rewrite_mask_into_dir(build_path, group, site, study, build_new_dir=False)
 
-    #List IDs for datakeeping purposes:
-    list_ids_through_data_dir()
-    list_ids_through_filenames()
+    # #List IDs for datakeeping purposes:
+    # list_ids_through_data_dir()
+    # list_ids_through_filenames()
+
+
+if __name__ == '__main__':
+    run()
 

@@ -24,7 +24,7 @@ def run(build, fold=0):
     # os.environ['nnUNet_n_proc_DA'] = '4' # Set in .sh file
 
     # https://github.com/MIC-DKFZ/nnUNet/blob/master/documentation/how_to_use_nnunet.md
-    cmd = ["nnUNetv2_train", "001", "nnUNetResEncUNetLPlans", "3d_fullres",  str(fold), "--c"]
+    cmd = ["nnUNetv2_train", "001", "3d_fullres", str(fold), "nnUNetResEncUNetLPlans", "--c"]
 
     process = subprocess.Popen(
         cmd, 
