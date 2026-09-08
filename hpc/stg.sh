@@ -35,4 +35,6 @@ ARCHIVE="login1:/shared/abdominal_imaging/Archive/demo"
 
 # srun runs your program on the allocated compute resources managed by Slurm
 srun "$ENV/bin/python" "$CODE/stage_1_dummy.py" --build="$BUILD"
+srun "$ENV/bin/python" "$CODE/stage_2_next_dummy.py" --build="$BUILD"
+srun "$ENV/bin/python" "$CODE/stage_3_next_dummy2.py" --build="$BUILD"
 rsync -av --no-group --no-perms "$BUILD/template" "$ARCHIVE"
