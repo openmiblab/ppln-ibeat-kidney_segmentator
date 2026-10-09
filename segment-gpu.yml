@@ -290,4 +290,4 @@ dependencies:
       - wrapt==2.2.2
       - yacs==0.1.8
       - zarr==3.2.1
-prefix: /mnt/parscratch/users/mdq23at/anaconda/.envs/segment
+prefix: /mnt/parscratch/users/$USER/anaconda/.envs/segment
