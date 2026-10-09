@@ -6,7 +6,7 @@ user_TOTSEG.txt
 user_XNAT.txt
 user_OSF.txt
 iBEAt_Build/*
-src/ibeat_kidney_segmentator/data*
+/src/ibeat_kidney_segmentator/data/
 
 ### package builds
 .venv/*
