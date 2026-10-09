@@ -7,13 +7,13 @@ PIPELINE = 'kidney_segmentator'
 def run(build, pp_input_dir, pp_output_dir, test_i, test_o, fold, model_for_inf=None):
     
     ppln.stage_1_build_canvas.run(build)
-    ppln.stage_3_display.run(build)
-    ppln.stage_4_data_split.run()
-    ppln.stage_5_data_prep.run()
-    ppln.stage_6_preprocessing.run()
-    ppln.stage_7_train.run()
-    ppln.stage_8_postprocessing.run(VALIDATION, pp_input_dir, pp_output_dir)
-    ppln.stage_9_test_model.run(test_i, test_o, fold, model_for_inf)
+    ppln.stage_5_display.run(build)
+    ppln.stage_7_data_split.run()
+    ppln.stage_6_data_prep.run()
+    ppln.stage_8_preprocessing.run()
+    ppln.stage_9_train.run()
+    ppln.stage_10_postprocessing.run(VALIDATION, pp_input_dir, pp_output_dir)
+    ppln.stage_11_test_model.run(test_i, test_o, fold, model_for_inf)
 
     #optional 
     #ppln.stage_2_view_and_edit.run()

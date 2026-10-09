@@ -6,9 +6,9 @@ import argparse
 
 def run(build):
 
-    raw_data = os.path.join(build, 'stage_2_training', 'nnUNet_raw')
-    preproc_data = os.path.join(build, 'stage_3_preprocess', 'nnUNet_preprocessed')
-    results = os.path.join(build, 'stage_4_results', 'nnUNet_results')
+    raw_data = os.path.join(build, 'stage_6_data_prep', 'nnUNet_raw')
+    preproc_data = os.path.join(build, 'stage_8_preprocess', 'nnUNet_preprocessed')
+    results = os.path.join(build, 'stage_9_results', 'nnUNet_results')
 
     # Ensure folders exist
     os.makedirs(preproc_data, exist_ok=True)
@@ -29,8 +29,8 @@ def run(build):
         "001",
         "-c", 
         "3d_fullres",
-        "-pl,"
-        "nnUNetPlannerResEncL"
+        "-pl",
+        "nnUNetPlannerResEncL",
         "--verify_dataset_integrity",
     ]
 
@@ -53,14 +53,15 @@ def run(build):
 
 if __name__ == '__main__':
 
-    BUILD = os.path.join(os.getcwd(), 'build')
+    BUILD = os.path.join(os.getcwd(), 'iBEAt_Build', 'kidney_segmentation')
 
-    # Comment for the cluster
-    os.environ['nnUNet_n_proc_DA'] = '4' # Set in .sh file
-    os.environ["CUDA_VISIBLE_DEVICES"]="0"
+    # # Comment for the cluster
+    # os.environ['nnUNet_n_proc_DA'] = '4' # Set in .sh file
+    # os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--build", type=str, default=BUILD, help="Build folder")
     args = parser.parse_args()
 
-    run(args.build)
+    #run(args.build)
+    run(BUILD)

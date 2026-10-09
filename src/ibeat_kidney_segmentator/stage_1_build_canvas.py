@@ -14,180 +14,34 @@ import dbdicom as db
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 import napari
-import utils.data
+import ibeat_kidney_segmentator.utils.data as data
 from tqdm import tqdm
 import re
+from pathlib import Path
 
-fix_cases = []
 
-def list_ids_through_data_dir(site, group, study):
+def rename_dir(old_name, new_name):
+    """
+    Rename the restored dir 
+    """
+    # Rename the restored dir from the archive to the assigned stage
+    old_dir = Path(old_name)
+    new_dir = old_dir.with_name(new_name)
+
+    old_dir.rename(new_dir)
+
+
+def compute_canvas(build_path, group, site=None, rename_stage=False, old_name=None,new_name=None):
+
+    """
+    Compute k-means clusters from the dixon data and 
+    save the output canvas to dir for segmentation task 
+    on designated viewer. 
+    """
+    if rename_stage == True:
+        rename_dir(old_name, new_name) 
     
-    if group == 'Controls':
-        data_dir = os.path.join(os.getcwd(), 'build', 'stage_1_build_canvas', 'reference_masks', group)
-    else:
-        data_dir = os.path.join(os.getcwd(), 'build', 'stage_1_build_canvas', 'reference_masks', group, site)
-    
-    database = db.series(data_dir, 'kidney_masks')
-    for case in database:
-        case_id = case[1]
-        if group != 'Controls':
-            if study is not None:
-                if case[2][0] == study:
-                    print(case_id)
-        else:
-            study = case[2][0]
-            print(case_id)
-
-def list_ids_through_filenames(group):
-    
-    png_dir = os.path.join(os.getcwd(), 'build', 'stage_1_build_canvas', 'displays', group)
-    nii_dir = os.path.join(os.getcwd(), 'training', 'imagesTr')
-
-    for f in os.listdir(png_dir):  
-        parts = f.split('_')
-        print(f'{parts[0]}_{parts[1]}')  
- 
-def rewrite_mask_into_dir(build_path, group, site, study, check_case=False, build_new_dir=False):
-
-
-    maskpath = os.path.join(build_path,  'stage_1_build_canvas', 'raw_masks') 
-    destpath = os.path.join(build_path,  'stage_1_build_canvas', 'clean_masks')
-    os.makedirs(destpath, exist_ok=True)
-
-    if group == 'Controls':
-        sitemaskpath = os.path.join(maskpath, group)
-        sitedestpath = os.path.join(destpath, group)
-    else: 
-        sitemaskpath = os.path.join(maskpath, group, site)
-        sitedestpath = os.path.join(destpath, group, site)
-
-    os.makedirs(sitemaskpath, exist_ok=True)
-
-
-    # Get out phase series
-    series_from = db.series(sitemaskpath)
-    series_to = db.series(sitedestpath)
-    
-    
-    series_lk = [s for s in series_from if s[3][0]=='LK']
-    series_rk = [s for s in series_from if s[3][0]=='RK']
-    
-    #paitent but dir ok
-    #skip filter for special_build cases if they have wrong study entry 
-    if not build_new_dir and group != 'Controls':
-        series_lk = [s for s in series_lk if s[2][0]== study]
-        series_rk = [s for s in series_rk if s[2][0]== study]
-   
-    #series naming and check/skip if it already exists  
-    for case in tqdm(series_lk, desc='Writing LK masks to folder', unit='case'):
-
-        case_id = case[1]
-        m_study = case[2][0]
-        
-
-
-        if build_new_dir == True:
-            tqdm.write(f'Sending case {case_id} to build new dir...')
-            m = re.findall(r'\d+', case_id)
-            if not m:
-                case_id = case[1]
-                print(f'Using default case id: {case_id}')
-                m_study = case[2][0]
-
-            else:
-                digits = "".join(m)
-                if len(digits) >= 7:
-                    case_id = f"{digits[:4]}_{digits[4:7]}"
-                else:
-                    case_id = digits
-
-                m_study = study
-                
-
-        if check_case == True:
-            if case_id not in fix_cases:
-                tqdm.write(f'case {case_id} LK not in fix cases, skipping!')
-                continue
-        
-        if group == 'Patients':
-            if m_study != study:
-                tqdm.write(f'mask study = {m_study} and does not match with database enqiry = {study}, skipping!')
-                continue
-
-        tqdm.write(f'Processing case {case_id} LK {m_study}')
-        
-        try:
-            vol = db.volume(case)
-        except Exception as e:
-            print(f'skipping case {case_id} {e}')
-        database = [sitedestpath, case_id, (m_study, 0)]
-        lk_clean = database + [("LK", 0)]
-        if lk_clean in series_to:
-            print('lk exists in folder, skipping!')
-            continue
-        try:
-            db.write_volume(vol, lk_clean, ref=case)
-        except Exception as e:
-            print(f'Skipping case {case_id}: {e}')
-            continue
-
-
-    for case in tqdm(series_rk, desc='Writing RK masks to folder', unit='case'):
-
-        case_id = case[1]
-        m_study = case[2][0]
-
-
-        if build_new_dir == True:
-            tqdm.write(f'Sending case {case_id} to build new dir...')
-            m = re.findall(r'\d+', case_id)
-            if not m:
-                case_id = case[1]
-                print(f'Using default case id: {case_id}')
-                m_study = case[2][0]
-
-            else:
-                digits = "".join(m)
-                if len(digits) >= 7:
-                    case_id = f"{digits[:4]}_{digits[4:7]}"
-                else:
-                    case_id = digits
-                    
-                m_study = study
-
-        
-        if check_case == True:
-            if case_id not in fix_cases:
-                tqdm.write(f'case {case_id} RK not in fix cases, skipping!')
-                continue
-        
-        if group == 'Patients':
-            if m_study != study:
-                tqdm.write(f'mask study = {m_study} and does not match with database enqiry = {study}, skipping!')
-                continue
-
-        tqdm.write(f'Processing case {case_id} RK {m_study}')
-        try:
-            vol = db.volume(case)
-        except Exception as e:
-            print(f'skipping case {case_id} {e}')
-
-        database = [sitedestpath, case_id, (m_study, 0)]
-        rk_clean = database + [("RK", 0)]
-        if rk_clean in series_to:
-            print('rk exists in folder, skipping!')
-            continue
-        try:
-            db.write_volume(vol, rk_clean, ref=case)
-        except Exception as e:
-            print(f'Skipping case {case_id}: {e}')
-            continue
-
-
-def compute_canvas(build_path, group, site=None):
-
-
-    datapath = os.path.join(build_path, 'stage_0_restored_data', 'dixons') 
+    datapath = os.path.join(build_path, 'stage_0_dixon_data') 
     maskpath = os.path.join(build_path, 'stage_1_canvas') 
     os.makedirs(maskpath, exist_ok=True)
 
@@ -201,7 +55,7 @@ def compute_canvas(build_path, group, site=None):
 
 
     # List of selected dixon series
-    record = utils.data.dixon_record(parent='ibeat_kidney_segmentator')
+    record = data.dixon_record(parent='ibeat_kidney_segmentator')
 
     # Get out phase series
     series = db.series(sitedatapath)
@@ -217,7 +71,7 @@ def compute_canvas(build_path, group, site=None):
         sequence = series_op_desc[:-10]
 
         # Skip if it is not the right sequence
-        selected_sequence = utils.data.dixon_series_desc(record, patient, study)
+        selected_sequence = data.dixon_series_desc(record, patient, study)
         if sequence != selected_sequence:
             continue
 
@@ -367,7 +221,11 @@ def show_arrays_in_napari(arrays, names=None, contrast_limits=None):
     napari.run()
     return viewer
 
-def run(build):
+def run(build, rename=False):
+
+    if rename == True:
+        rename_dir(old_name= os.path.join(os.getcwd(), 'iBEAt_Build', 'kidney_segmentation', 'stage_5_clean_dixon_data'),
+                   new_name="stage_0_dixon_data")
 
     compute_canvas(build, 'Controls')
 
@@ -380,15 +238,10 @@ def run(build):
         for study in ('Baseline', 'Followup'):
             compute_canvas(build, 'Patients', site, study)
 
-    # #Once mask is generated in gui, use the following function to rebuild directory
-    # group=[], site=[], study=[],
-    # rewrite_mask_into_dir(build_path, group, site, study, build_new_dir=False)
-
-    # #List IDs for datakeeping purposes:
-    # list_ids_through_data_dir()
-    # list_ids_through_filenames()
 
 
 if __name__ == '__main__':
-    run()
 
+    BUILD = os.path.join(os.getcwd(), 'iBEAt_Build', 'kidney_segmentation')
+    run(BUILD, rename=True)
+    

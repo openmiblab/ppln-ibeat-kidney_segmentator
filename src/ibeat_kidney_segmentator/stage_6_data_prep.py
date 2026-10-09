@@ -3,90 +3,8 @@ import dbdicom as db
 from tqdm import tqdm 
 import numpy as np
 import nibabel as nib
-import utils.data as data
+import ibeat_kidney_segmentator.utils.data as data
 
-def check_precontrast_ids(input_case_id, study_type):   
-        if study_type == 'Baseline':
-            
-            precontrast_cases =[
-                '1128_018',
-                '1128_032',
-                '1128_045',
-                '1128_061',
-                '1128_066',
-                '1128_067',
-                '1128_068',
-                '1128_075',
-                '1128_081',
-                '1128_082',
-                '1128_083',
-                '2128_043',
-                '3128_017',
-                '3128_034',
-                '3128_063',
-                '3128_064',
-                '3128_119',
-                '4128_013',
-                '4128_028',
-                '4128_045',
-                '4128_048',
-                '5128_061',
-                '5128_066',
-                '5128_101',
-                '6128_005',
-                '6128_006',
-                '6128_009',
-                '7128_003',
-                '7128_004',
-                '7128_025',
-                '7128_043',
-                '7128_046',
-                '7128_025',
-                '7128_043',
-                '7128_046',
-                '7128_051',
-                '7128_060',
-                '7128_064',
-                '7128_078',
-                '7128_079',
-                '7128_081',
-                '7128_090',
-                '7128_095',
-                '7128_099',
-                '7128_107',
-                '7128_108',
-                '7128_120',
-                '7128_126',
-                '7128_127',
-                '7128_128',
-                '7128_130',
-                '7128_131',
-                '7128_135',
-                '7128_136',
-                '7128_142',
-                '7128_143',
-                '7128_146',
-                '7128_151',
-                '7128_152',
-                '7128_153',
-                '7128_158',
-                '7128_159',
-                '7128_165'
-            ]
-        else:
-            precontrast_cases = [
-            
-            '2128_002',
-            '5128_068',
-            '6128_008'
-            ]
-
-        if input_case_id in precontrast_cases:
-            output_case_id = input_case_id
-        else:
-            output_case_id = []
-        
-        return output_case_id
 
 def create_database(
     series,
@@ -122,11 +40,11 @@ def create_database(
 def prep_tr_data_nnunet(site=None, study_type=None, cohort='Controls', precontrast=False, visit=1):
     # build table_dir
     if site is not None:
-        data_dir = os.path.join(os.getcwd(), 'build', "stage_0_restored_data", 'dixons', cohort, site)
+        data_dir = os.path.join(os.getcwd(), 'iBEAt_Build', 'kidney_segmentation', "stage_0_dixon_data", cohort, site)
     else:
-        data_dir = os.path.join(os.getcwd(), 'build', "stage_0_restored_data", "dixon", cohort)
+        data_dir = os.path.join(os.getcwd(), 'iBEAt_Build', 'kidney_segmentation', "stage_0_dixon_data", cohort)
 
-    dest_dir_lbls = os.path.join(os.getcwd(), 'build', "stage_2_training", "nnunet_raw", "imagesTr")
+    dest_dir_lbls = os.path.join(os.getcwd(), 'iBEAt_Build', 'kidney_segmentation', "stage_6_data_prep", "nnunet_raw", "imagesTr")
     os.makedirs(dest_dir_lbls, exist_ok=True)
 
     if cohort == 'Controls':
@@ -160,19 +78,23 @@ def prep_tr_data_nnunet(site=None, study_type=None, cohort='Controls', precontra
     merged = []
     desc_site = site if site else "Controls"
     # List of selected dixon series
-    record = data.dixon_record(parent='ibeat_kidney_shape')
+    record = data.dixon_record(parent='ibeat_kidney_segmentator')
 
-    for outphase in tqdm(sorted(outphase_dir), desc=f'Processing {desc_site} (study/visit: {study_type if study_type is not None else visit}) DICOMs to Nifti', unit='case') :
+    for outphase in tqdm(sorted(outphase_dir), 
+                         desc=f'Processing {desc_site} (study/visit: {study_type if study_type is not None else visit}) DICOMs to Nifti', 
+                         unit='case') :
         
         case_id = outphase[1]
-        if case_id not in ('1128_069'):
-            continue
-            
-        if cohort != 'Controls':
-            its_precontrast = check_precontrast_ids(case_id, study_type)
+        study = outphase[2][0]
 
-            if its_precontrast:
+        selected_seq = data.dixon_series_desc(record, case_id, study)
+
+
+        if cohort != 'Controls':
+            #assig precontrast data IDs
+            if 'post_contrast' not in selected_seq:
                 # this ID belongs to a precontrast image
+                its_precontrast = True
                 if study_type == "Followup":
                     o_output_path = os.path.join(dest_dir_lbls, f"{case_id}_01_0000.nii.gz")
                     i_output_path = os.path.join(dest_dir_lbls, f"{case_id}_01_0001.nii.gz")
@@ -214,7 +136,6 @@ def prep_tr_data_nnunet(site=None, study_type=None, cohort='Controls', precontra
             continue
 
         
-        study = outphase[2][0]
         
         # corresponsing images for the same case
         inphase = next(i for i in inphase_dir if i[1] == case_id)
@@ -222,48 +143,29 @@ def prep_tr_data_nnunet(site=None, study_type=None, cohort='Controls', precontra
         water = next(i for i in water_dir if i[1] == case_id)
 
         series_op_desc = outphase[3][0]
-        series_in_desc = inphase[3][0]
-        series_fat_desc = fat[3][0]
-        series_water_desc = water[3][0]
 
         o_sequence = series_op_desc[:-10]
-        i_sequence = series_in_desc[:-9]
-        f_sequence = series_fat_desc[:-4]
-        w_sequence = series_water_desc[:-6]
 
         selected_sequence = data.dixon_series_desc(record, case_id, study)
         
         if o_sequence != selected_sequence:
             tqdm.write(f'{case_id} o seq {o_sequence} does not match records seq {selected_sequence}, skipping!')
             continue
-        elif i_sequence != selected_sequence:
-            tqdm.write(f'{case_id} i seq {i_sequence} does not match records seq {selected_sequence}, skipping!')
-            continue
-        elif f_sequence != selected_sequence:
-            tqdm.write(f'{case_id} f seq {f_sequence} does not match records seq {selected_sequence}, skipping!')
-            continue
-        elif w_sequence != selected_sequence:
-            tqdm.write(f'{case_id} w seq {w_sequence} does not match records seq {selected_sequence}, skipping!')
-            continue
         
-        
-
 
         try:
             outphase = db.volume(outphase)
             inphase = db.volume(inphase)
             fat = db.volume(fat)
             water = db.volume(water)
-
-
         except Exception as e:
             if cohort != 'Controls':
-                tqdm.write(f'Cannot load {case_id} {study_type}: {e}')
+                tqdm.write(f'Cannot load {case_id} {study_type} volume: {e}')
             else:
-                tqdm.write(f'Cannot load {case_id} {visit}: {e}')
+                tqdm.write(f'Cannot load {case_id} {visit} volume: {e}')
             continue
     
-
+        #extract arrays
         outphase_vol = outphase.values
         inphase_vol = inphase.values
         fat_vol = fat.values
@@ -273,14 +175,13 @@ def prep_tr_data_nnunet(site=None, study_type=None, cohort='Controls', precontra
         in_affine = inphase.affine
         fat_affine = fat.affine
         water_affine = water.affine
-        
+
+        #write to NiFti
         o_nii_img = nib.Nifti1Image(outphase_vol, out_affine)
         i_nii_img = nib.Nifti1Image(inphase_vol, in_affine)
         f_nii_img = nib.Nifti1Image(fat_vol, fat_affine)
         w_nii_img = nib.Nifti1Image(water_vol, water_affine)
 
-
-        
 
         nib.save(o_nii_img, o_output_path)
         nib.save(i_nii_img, i_output_path)
@@ -298,11 +199,11 @@ def prep_labels(site=None, study_type=None, cohort='Controls', visit=1, rebuild=
 
     # build table_dir
     if site is not None:
-        lbls_dir = os.path.join(os.getcwd(), "stage_2_training", "ref_mask_dicoms", cohort, site)
+        lbls_dir = os.path.join(os.getcwd(), 'iBEAt_Build', 'kidney_segmentation', "stage_3_clean_masks_data", cohort, site)
     else:
-        lbls_dir = os.path.join(os.getcwd(), "stage_2_training", "ref_mask_dicoms", cohort)
+        lbls_dir = os.path.join(os.getcwd(), 'iBEAt_Build', 'kidney_segmentation', "stage_3_clean_masks_data", cohort)
 
-    dest_dir_lbls = os.path.join(os.getcwd(), "stage_2_training", "nnunet_raw", "labelsTr")
+    dest_dir_lbls = os.path.join(os.getcwd(),'iBEAt_Build', 'kidney_segmentation',  "stage_6_data_prep", "nnunet_raw", "labelsTr")
     os.makedirs(dest_dir_lbls, exist_ok=True)
 
     if cohort == 'Controls':
@@ -313,23 +214,31 @@ def prep_labels(site=None, study_type=None, cohort='Controls', visit=1, rebuild=
             lbls_database = db.series(lbls_dir, contains='kidney_masks')
             lbls_database = [i for i in lbls_database if i[2][0] == study_type] 
 
+    record = data.dixon_record(parent='ibeat_kidney_segmentator')
     for label in lbls_database:
         case_id = label[1]
-        if case_id not in ('3128_086', '5128_060', '7128_138'):
-            continue
 
-        its_precontrast = check_precontrast_ids(case_id, study_type)
+        if case_id != '6128_006':
+            continue
+        
+        if cohort == 'Controls':
+            continue
 
         if cohort == 'Controls':
             output_path = os.path.join(dest_dir_lbls, f"{case_id}_V{visit}.nii.gz")
         else:
+            selected_seq = data.dixon_series_desc(record, case_id, study_type)
+            if 'post_contrast' not in selected_seq:
+                its_precontrast = True
+            else:
+                its_precontrast = False
+
             if its_precontrast:
                 # this ID belongs to a precontrast image
                 if study_type == "Followup":
                     output_path = os.path.join(dest_dir_lbls, f"{case_id}_01.nii.gz")
                 else:
                     output_path = os.path.join(dest_dir_lbls, f"{case_id}_00.nii.gz")
-
             else:
                 # this ID belongs to a postcontrast image
                 if study_type == "Followup":
@@ -356,8 +265,6 @@ def prep_labels(site=None, study_type=None, cohort='Controls', visit=1, rebuild=
                 continue        
         
         
-
-
         try:
             label_vol = db.volume(label)
             label_arr = label_vol.values
@@ -371,8 +278,6 @@ def prep_labels(site=None, study_type=None, cohort='Controls', visit=1, rebuild=
         nib.save(nii_label, output_path)
 
         print(f'Saved Nifti in folder {output_path}')
-
-        
 
 
 def prep_img_nnunet():

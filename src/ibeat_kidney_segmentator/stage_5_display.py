@@ -8,7 +8,7 @@ import dbdicom as db
 from tqdm import tqdm
 from miblab_plot import mosaic_overlay
 
-from ibeat_kidney_shape.utils import data
+from ibeat_kidney_segmentator.utils import data
 
 MODULE_DIR = Path(__file__).resolve().parent
 

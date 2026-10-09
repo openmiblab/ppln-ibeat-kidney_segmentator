@@ -6,8 +6,12 @@ import napari
 from qtpy.QtWidgets import QPushButton
 import numpy as np
 
-single_case = []
+"""
+Optional:
+View outphase image and mask overlays
+& make manual corrections if necessary.
 
+"""
 
 
 def edit_case(site=None, group=None, study=None, visit=None, check_cases=False):
@@ -100,6 +104,9 @@ def run(site, group, study):
 
 
 if __name__ =='__main__':
+    single_case = []
+
+
     Ba = 'Bari'
     B = 'Bordeaux'
     E = 'Exeter'
