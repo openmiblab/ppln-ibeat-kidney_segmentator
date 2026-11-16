@@ -168,7 +168,7 @@ Extracts and organises the final kidney segmentation masks into a dedicated dire
 
 The masks are exported as DICOM segmentation series with appropriate metadata using the updated dbdicom implementation.
 
-### Stage 4: ground truth Visualisation
+### Stage 4: Ground Truth Visualisation
 
 Generates .png visualisations of the segmented left and right kidneys overlaid on the corresponding opposed-phase Dixon MRI.
 
