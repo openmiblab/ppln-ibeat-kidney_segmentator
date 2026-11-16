@@ -1,10 +1,6 @@
 """
-Functions that were used to generate the canvas for semi-automated 
-definition of the training data. This functions are preserved for 
-future reference but not currently used as part of the pipeline.
-
-They will be needed when new training data are to be generated from 
-scratch in the future.
+1.) Renames restored clean dixon data from archive.
+2.) Computes canvas (k-means clustering on opposed-phase & fat images) for all sites.   
 """
 
 import os
@@ -14,9 +10,8 @@ import dbdicom as db
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 import napari
-import ibeat_kidney_segmentator.utils.data as data
+import ibeatsegmentator.utils.data as data
 from tqdm import tqdm
-import re
 from pathlib import Path
 
 
@@ -31,15 +26,13 @@ def rename_dir(old_name, new_name):
     old_dir.rename(new_dir)
 
 
-def compute_canvas(build_path, group, site=None, rename_stage=False, old_name=None,new_name=None):
+def compute_canvas(build_path, group, site=None):
 
     """
     Compute k-means clusters from the dixon data and 
     save the output canvas to dir for segmentation task 
     on designated viewer. 
     """
-    if rename_stage == True:
-        rename_dir(old_name, new_name) 
     
     datapath = os.path.join(build_path, 'stage_0_dixon_data') 
     maskpath = os.path.join(build_path, 'stage_1_canvas') 
@@ -55,7 +48,7 @@ def compute_canvas(build_path, group, site=None, rename_stage=False, old_name=No
 
 
     # List of selected dixon series
-    record = data.dixon_record(parent='ibeat_kidney_segmentator')
+    record = data.dixon_record(parent='ibeatsegmentator')
 
     # Get out phase series
     series = db.series(sitedatapath)
@@ -221,27 +214,30 @@ def show_arrays_in_napari(arrays, names=None, contrast_limits=None):
     napari.run()
     return viewer
 
-def run(build, rename=False):
+def run(build):
+    old_dixon_path = os.path.join(build, 'stage_5_clean_dixon_data')
+    new_dixon_path = os.path.join(build, 'stage_0_dixon_data')
 
-    if rename == True:
-        rename_dir(old_name= os.path.join(os.getcwd(), 'iBEAt_Build', 'kidney_segmentation', 'stage_5_clean_dixon_data'),
-                   new_name="stage_0_dixon_data")
-
-    compute_canvas(build, 'Controls')
-
-    sites_1 = ['Bari', 'Leeds', 'Sheffield']
-    for site in tqdm(sites_1, desc='Sites Completed', unit='site'):
-        compute_canvas(build, 'Patients', site)
-
-    sites_2 = ['Bordeaux', 'Exeter', 'Turku']
-    for site in tqdm(sites_2, desc='Sites Completed', unit='site'):
-        for study in ('Baseline', 'Followup'):
-            compute_canvas(build, 'Patients', site, study)
+    if not os.path.exists(new_dixon_path):
+        rename_dir(old_dixon_path, 'stage_0_dixon_data')
+    else:
+        print('Unable to locate restored dixons: stage_5_clean_dixon_data. Check build directory')
+    
+    try:
+        #Control data
+        compute_canvas(build, 'Controls')
+        #Patient data
+        sites = ['Bari', 'Leeds', 'Sheffield', 'Bordeaux', 'Exeter', 'Turku']
+        for site in tqdm(sites, desc='Sites Completed', unit='site'):
+            compute_canvas(build, 'Patients', site)
+    except Exception as e:
+        tqdm.write(f'Error computing canvas: {e}')
+        
 
 
 
 if __name__ == '__main__':
 
-    BUILD = os.path.join(os.getcwd(), 'iBEAt_Build', 'kidney_segmentation')
-    run(BUILD, rename=True)
+    BUILD = os.path.join(os.getcwd(), 'iBEAt_Build', 'ibeatsegmentator')
+    run(BUILD)
     

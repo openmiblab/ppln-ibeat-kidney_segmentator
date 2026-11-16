@@ -11,55 +11,58 @@ from collections import defaultdict
 # ---------------------------------------------------------------------
 k_folds = 1
 seed = 42
+dataname = 'Dataset001_Kidneys'
 
 # Held-out test split at patient level
 test_fraction = 0.2
 validation_fraction = 0.1
 min_test_patients = 1
 
-# Keep the original configured roots
+# Directory root
 build = os.path.join(
-    os.getcwd(), "iBEAt_Build", "kidney_segmentation"
+    os.getcwd(), "iBEAt_Build", "ibeatsegmentator"
 )
 
 imagesTr = os.path.join(
-    build, "stage_6_data_prep/nnunet_raw/Dataset001_Kidneys/imagesTr"
+    build, f"stage_6_data_prep/nnunet_raw/{dataname}/imagesTr"
 )
 labelsTr = os.path.join(
-    build, "stage_6_data_prep/nnunet_raw/Dataset001_Kidneys/labelsTr"
+    build, f"stage_6_data_prep/nnunet_raw/{dataname}/labelsTr"
+)
+
+#Held-out set 
+testing_root = os.path.join(
+    build, f"stage_6_data_prep/nnunet_raw/{dataname}/testing"
 )
 imagesTs = os.path.join(
-    build, "stage_6_data_prep/nnunet_raw/Dataset001_Kidneys/testing/imagesTs"
+    build, f"stage_6_data_prep/nnunet_raw/{dataname}/testing/imagesTs"
 )
 labelsTs = os.path.join(
-    build, "stage_6_data_prep/nnunet_raw/Dataset001_Kidneys/testing/labelsTs"
+    build, f"stage_6_data_prep/nnunet_raw/{dataname}/testing/labelsTs"
+)
+
+# Incomplete datasets
+incomplete_root = os.path.join(
+    build, "stage_6_data_prep", "incomplete_set"
 )
 
 # Folders for excluded cases
-testing_root = os.path.join(
-    build, "stage_6_data_prep/nnunet_raw/Dataset001_Kidneys/testing"
-)
 faulty_tr_root = os.path.join(
-    build, "stage_6_data_prep/nnunet_raw/tr_excluded_labels"
+    incomplete_root, "excluded_labels"
 )
 no_label_tr_root = os.path.join(
-    build, "stage_6_data_prep/nnunet_raw/tr_img_with_no_labels"
+    incomplete_root, "img_wo_lbl"
 )
 no_tr_labels_root = os.path.join(
-    build, "stage_6_data_prep/nnunet_raw/lbls_with_no_img"
+    incomplete_root, "lbl_wo_img"
 )
 faulty_labels_txt = os.path.join(
-    build, "stage_6_data_prep/nnunet_raw/faulty_labels.txt"
-)
-
-# Preserve the original incomplete-channel folder
-incomplete_root = os.path.join(
-    os.getcwd(), "training", "incomplete_tr"
+    incomplete_root, "faulty_labels.txt"
 )
 
 # JSON output folder
 out_dir = os.path.join(
-    build, "stage_6_data_prep/nnunet_raw/Dataset001_Kidneys"
+    build, f"stage_6_data_prep/nnunet_raw/{dataname}"
 )
 os.makedirs(out_dir, exist_ok=True)
 
@@ -172,7 +175,7 @@ def find_label_filename(case_id, folder):
 
 
 def move_file(src, dst):
-    """Move an existing file without silently overwriting another file."""
+    """Move an existing file."""
     if not os.path.exists(src):
         return False
 
@@ -266,7 +269,7 @@ def reset_split():
         labelsTr
     )
 
-    # Restore incomplete-channel images.
+    # Restore incomplete dataset.
     restore_folder(
         os.path.join(incomplete_root, "imagesTr"),
         imagesTr
@@ -619,7 +622,7 @@ def create_json():
     # Move the held-out test images and labels.
     move_test_data(test_files)
 
-    # Preserve the original dataset JSON structure.
+    # JSON data.
     dataset = {
         "name": "iBEAt 3D Kidney Segmentation Dixon 4-Channel",
         "licence": "apache",
@@ -678,7 +681,7 @@ def create_fold_database():
     create_json()
 
     # ---------------------------------------------------------------
-    # ORIGINAL SUMMARY FORMAT
+    # SUMMARY
     # ---------------------------------------------------------------
     files = list_nii_files(imagesTr)
 

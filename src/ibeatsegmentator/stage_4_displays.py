@@ -8,16 +8,16 @@ import dbdicom as db
 from tqdm import tqdm
 from miblab_plot import mosaic_overlay
 
-from ibeat_kidney_segmentator.utils import data
+from ibeatsegmentator.utils import data
 
 MODULE_DIR = Path(__file__).resolve().parent
 
 
 def run(build):
 
-    dir_data = os.path.join(build,'stage_0_restored_data', 'dixons') 
-    dir_masks = os.path.join(build, 'stage_1_build_canvas', 'clean_masks') 
-    dir_output = os.path.join(build, 'stage_3_display')
+    dir_data = os.path.join(build,'stage_0_dixon_data') 
+    dir_masks = os.path.join(build, 'stage_3_kidney_masks') 
+    dir_output = os.path.join(build, 'stage_4_display')
     os.makedirs(dir_output, exist_ok=True)
 
     logging.basicConfig(
@@ -65,7 +65,7 @@ def run_db(db_data, db_masks, db_mosaics):
         except:
             logging.exception(f"Error building mosaic for {patient_id}, {study}, {sequence}.")
 
-def run(build):
+def run_args(build):
     parser = argparse.ArgumentParser()
     parser.add_argument("--build", type=str, default=build, help="Build folder")
     args = parser.parse_args()
@@ -73,4 +73,5 @@ def run(build):
     run(args.build)
 
 if __name__=='__main__':
-    run()
+    BUILD = os.path.join(os.getcwd(), 'iBEAt_Build', 'ibeatsegmentator')
+    run(BUILD)

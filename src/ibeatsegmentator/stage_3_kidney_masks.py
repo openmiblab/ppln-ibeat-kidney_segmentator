@@ -9,12 +9,12 @@ i.e., if segmented masks were generated on wezel, the following
     script re-saves mask in the dedicated harmonised dicom folders
 """
 
-def list_ids_through_data_dir(site, group, study):
+def list_ids_through_data_dir(build, site, group, study):
     
     if group == 'Controls':
-        data_dir = os.path.join(os.getcwd(), 'build', 'stage_1_build_canvas', 'reference_masks', group)
+        data_dir = os.path.join(build, 'stage_3_kidney_masks', group)
     else:
-        data_dir = os.path.join(os.getcwd(), 'build', 'stage_1_build_canvas', 'reference_masks', group, site)
+        data_dir = os.path.join(build, 'stage_3_kidney_masks', group, site)
     
     database = db.series(data_dir, 'kidney_masks')
     for case in database:
@@ -27,21 +27,12 @@ def list_ids_through_data_dir(site, group, study):
             study = case[2][0]
             print(case_id)
 
-def list_ids_through_filenames(group):
-    
-    png_dir = os.path.join(os.getcwd(), 'build', 'stage_1_build_canvas', 'displays', group)
-    nii_dir = os.path.join(os.getcwd(), 'training', 'imagesTr')
-
-    for f in os.listdir(png_dir):  
-        parts = f.split('_')
-        print(f'{parts[0]}_{parts[1]}')  
-
 
 def write_masks_into_dir(build_path, group, site, study, check_case=False, build_new_dir=False):
 
 
-    maskpath = os.path.join(build_path,  'stage_1_build_canvas', 'raw_masks') 
-    destpath = os.path.join(build_path,  'stage_2_kidney_masks')
+    maskpath = os.path.join(build_path, 'stage_2_gui_data') 
+    destpath = os.path.join(build_path, 'stage_3_kidney_masks')
     os.makedirs(destpath, exist_ok=True)
 
     if group == 'Controls':
@@ -95,7 +86,7 @@ def write_masks_into_dir(build_path, group, site, study, check_case=False, build
                 
 
         if check_case == True:
-            if case_id not in fix_cases:
+            if case_id not in FIX:
                 tqdm.write(f'case {case_id} LK not in fix cases, skipping!')
                 continue
         
@@ -147,7 +138,7 @@ def write_masks_into_dir(build_path, group, site, study, check_case=False, build
 
         
         if check_case == True:
-            if case_id not in fix_cases:
+            if case_id not in FIX:
                 tqdm.write(f'case {case_id} RK not in fix cases, skipping!')
                 continue
         
@@ -175,5 +166,6 @@ def write_masks_into_dir(build_path, group, site, study, check_case=False, build
 
 
 if __name__ == '___main___':
-    fix_cases = []
-    write_masks_into_dir()
+    FIX = []
+    BUILD = os.path.join(os.getcwd(), 'iBEAt_Build', 'ibeatsegmentator')
+    write_masks_into_dir(BUILD)

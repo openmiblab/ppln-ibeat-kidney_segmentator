@@ -3,8 +3,7 @@ import dbdicom as db
 from tqdm import tqdm 
 import numpy as np
 import nibabel as nib
-import ibeat_kidney_segmentator.utils.data as data
-
+import ibeatsegmentator.utils.data as data
 
 def create_database(
     series,
@@ -37,14 +36,14 @@ def create_database(
     return list(latest.values())
 
 
-def prep_tr_data_nnunet(site=None, study_type=None, cohort='Controls', precontrast=False, visit=1):
+def prep_tr_data_nnunet(build, site=None, study_type=None, cohort='Controls', precontrast=False, visit=1):
     # build table_dir
     if site is not None:
-        data_dir = os.path.join(os.getcwd(), 'iBEAt_Build', 'kidney_segmentation', "stage_0_dixon_data", cohort, site)
+        data_dir = os.path.join(build, "stage_0_dixon_data", cohort, site)
     else:
-        data_dir = os.path.join(os.getcwd(), 'iBEAt_Build', 'kidney_segmentation', "stage_0_dixon_data", cohort)
+        data_dir = os.path.join(build, "stage_0_dixon_data", cohort)
 
-    dest_dir_lbls = os.path.join(os.getcwd(), 'iBEAt_Build', 'kidney_segmentation', "stage_6_data_prep", "nnunet_raw", "imagesTr")
+    dest_dir_lbls = os.path.join(build, "stage_6_data_prep", "nnunet_raw", "imagesTr")
     os.makedirs(dest_dir_lbls, exist_ok=True)
 
     if cohort == 'Controls':
@@ -193,17 +192,17 @@ def prep_tr_data_nnunet(site=None, study_type=None, cohort='Controls', precontra
         print(f'Saved Nifti in folder {f_output_path}')
         print(f'Saved Nifti in folder {w_output_path}')
 
-def prep_labels(site=None, study_type=None, cohort='Controls', visit=1, rebuild=False):
+def prep_labels(build, site=None, study_type=None, cohort='Controls', visit=1, rebuild=False):
 
     rebuild_cases = []
 
     # build table_dir
     if site is not None:
-        lbls_dir = os.path.join(os.getcwd(), 'iBEAt_Build', 'kidney_segmentation', "stage_3_clean_masks_data", cohort, site)
+        lbls_dir = os.path.join(build, "stage_3_clean_masks_data", cohort, site)
     else:
-        lbls_dir = os.path.join(os.getcwd(), 'iBEAt_Build', 'kidney_segmentation', "stage_3_clean_masks_data", cohort)
+        lbls_dir = os.path.join(build, "stage_3_clean_masks_data", cohort)
 
-    dest_dir_lbls = os.path.join(os.getcwd(),'iBEAt_Build', 'kidney_segmentation',  "stage_6_data_prep", "nnunet_raw", "labelsTr")
+    dest_dir_lbls = os.path.join(build,  "stage_6_data_prep", "nnunet_raw", "labelsTr")
     os.makedirs(dest_dir_lbls, exist_ok=True)
 
     if cohort == 'Controls':
@@ -280,39 +279,40 @@ def prep_labels(site=None, study_type=None, cohort='Controls', visit=1, rebuild=
         print(f'Saved Nifti in folder {output_path}')
 
 
-def prep_img_nnunet():
+def prep_img_nnunet(build):
     visits = [1,2,3,4,5]
     for v in visits:
-        prep_tr_data_nnunet(visit=v)
+        prep_tr_data_nnunet(build, visit=v)
 
     sites_1 = ['Bari', 'Leeds', 'Sheffield']
     for site in tqdm(sites_1, desc='Sites Completed', unit='site'):
-        prep_tr_data_nnunet(site, 'Baseline', 'Patients', precontrast=True)
-        prep_tr_data_nnunet(site, 'Baseline', 'Patients')
+        prep_tr_data_nnunet(build, site, 'Baseline', 'Patients', precontrast=True)
+        prep_tr_data_nnunet(build, site, 'Baseline', 'Patients')
 
     sites_2 = ['Bordeaux', 'Exeter', 'Turku']
     for site in tqdm(sites_2, desc='Sites Completed', unit='site'):
         for study in ('Baseline', 'Followup'):
-            prep_tr_data_nnunet(site, study, 'Patients', precontrast=True)
-            prep_tr_data_nnunet(site, study, 'Patients')
+            prep_tr_data_nnunet(build, site, study, 'Patients', precontrast=True)
+            prep_tr_data_nnunet(build, site, study, 'Patients')
 
-def prep_lbls_nnunet():
+def prep_lbls_nnunet(build):
     visits = [1,2,3,4,5]
     for v in visits:
-        prep_labels(visit=v)
+        prep_labels(build, visit=v)
     sites_1 = ['Bari', 'Leeds', 'Sheffield']
     for site in tqdm(sites_1, desc='Sites Completed', unit='site'):
-        prep_labels(site, 'Baseline', 'Patients')
+        prep_labels(build, site, 'Baseline', 'Patients')
     
     sites_2 = ['Bordeaux', 'Exeter', 'Turku']
     for site in tqdm(sites_2, desc='Sites Completed', unit='site'):
         for study in  ('Baseline', 'Followup'):
-            prep_labels(site, study, 'Patients')
+            prep_labels(build, site, study, 'Patients')
 
-def run():
-    prep_img_nnunet()
-    prep_lbls_nnunet()
+def run(build):
+    prep_img_nnunet(build)
+    prep_lbls_nnunet(build)
 
 if __name__ == '__main__':
-    run()
+    build = os.path.join(os.getcwd(), 'iBEAt_Build', 'ibeatsegmentator')
+    run(build)
     
